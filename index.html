@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Love Puzzle Game</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #ffe6f0;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    h1 {
+      color: #d6336c;
+      margin-top: 20px;
+    }
+
+    .puzzle-container {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 2px;
+      margin: 40px auto;
+      width: 304px;
+      height: 304px;
+      border: 4px solid #d6336c;
+    }
+
+    .tile {
+      background-image: url('love.jpg');
+      background-size: 300px 300px;
+      width: 100px;
+      height: 100px;
+      border: 2px solid #fff;
+      box-sizing: border-box;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .hidden {
+      background: #ffe6f0;
+      cursor: default;
+    }
+
+    .love-message {
+      font-size: 18px;
+      color: #d6336c;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .buttons {
+      margin-top: 20px;
+    }
+
+    button {
+      background-color: #d6336c;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #c0265d;
+    }
+  </style>
+</head>
+<body>
+  <h1>💕 Solve the Puzzle, My Love 💕</h1>
+  <div class="puzzle-container" id="puzzle"></div>
+
+  <div class="buttons">
+    <button onclick="shuffleTiles()">🔀 Shuffle Puzzle</button>
+    <button onclick="solvePuzzle()">✅ Solve Puzzle</button>
+  </div>
+
+  <div class="love-message" id="message">You did it! You're my smart love ❤️</div>
+
+  <script>
+    const puzzle = document.getElementById('puzzle');
+    const message = document.getElementById('message');
+    const size = 3;
+    let tiles = [];
+
+    function createTiles() {
+      for (let i = 0; i < size * size; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        if (i === size * size - 1) tile.classList.add('hidden');
+        const x = (i % size) * 100;
+        const y = Math.floor(i / size) * 100;
+        tile.style.backgroundPosition = `-${x}px -${y}px`;
+        tile.dataset.index = i;
+        tiles.push(tile);
+        puzzle.appendChild(tile);
+      }
+    }
+
+    function shuffleTiles() {
+      message.style.display = 'none';
+      for (let i = tiles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * i);
+        [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+      }
+      renderTiles();
+    }
+
+    function renderTiles() {
+      puzzle.innerHTML = '';
+      tiles.forEach(tile => puzzle.appendChild(tile));
+    }
+
+    function isAdjacent(i1, i2) {
+      const row1 = Math.floor(i1 / size);
+      const col1 = i1 % size;
+      const row2 = Math.floor(i2 / size);
+      const col2 = i2 % size;
+      return (Math.abs(row1 - row2) + Math.abs(col1 - col2)) === 1;
+    }
+
+    puzzle.addEventListener('click', (e) => {
+      const clicked = e.target;
+      if (!clicked.classList.contains('tile') || clicked.classList.contains('hidden')) return;
+
+      const emptyIndex = tiles.findIndex(t => t.classList.contains('hidden'));
+      const clickedIndex = tiles.indexOf(clicked);
+
+      if (isAdjacent(clickedIndex, emptyIndex)) {
+        [tiles[emptyIndex], tiles[clickedIndex]] = [tiles[clickedIndex], tiles[emptyIndex]];
+        renderTiles();
+        checkWin();
+      }
+    });
+
+    function solvePuzzle() {
+      message.style.display = 'block';
+      tiles.sort((a, b) => parseInt(a.dataset.index) - parseInt(b.dataset.index));
+      renderTiles();
+    }
+
+    function checkWin() {
+      const correct = tiles.every((tile, index) => tile.dataset.index == index);
+      if (correct) {
+        message.style.display = 'block';
+      }
+    }
+
+    createTiles();
+    shuffleTiles();
+  </script>
+</body>
+</html>
